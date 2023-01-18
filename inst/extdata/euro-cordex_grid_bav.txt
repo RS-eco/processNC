@@ -1,0 +1,12 @@
+gridtype = lonlat
+xsize = 120 # replace by your value
+ysize = 77 # replace by your value
+xfirst = 3.520488 # replace by your value
+xinc = 0.11 # replace by your value
+yfirst = 46.65974 # replace by your value
+yinc = 0.11 # replace by your value
+
+#RotPole (198.0; 39.25)
+#TLC (331.79; 21.67)
+#Nx=106
+#Ny=103

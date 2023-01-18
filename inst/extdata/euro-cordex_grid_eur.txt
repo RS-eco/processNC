@@ -1,0 +1,7 @@
+gridtype = lonlat
+xsize = 996 # replace by your value
+ysize = 460 # replace by your value
+xfirst = -44.195 # replace by your value
+xinc = 0.11 # replace by your value
+yfirst = 22.145 # replace by your value
+yinc = 0.11 # replace by your value

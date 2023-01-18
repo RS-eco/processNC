@@ -1,0 +1,245 @@
+---
+title: "processNC: R Package for processing and analysing (large) NetCDF files"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, comment=NA, message=FALSE, cache=FALSE, fig.path="figures/")
+```
+
+## Overview
+
+`processNC` is an R package for processing and analysing NetCDF files in R. NetCDF files can easily be loaded into R using the `rast()` function from the `terra` package in R or formerly also using the `raster()` function from the `raster` package. However, when trying to handle large NetCDF files it might be more convenient to directly use the ncdf4 package or the Climate Data Operators software and this package provides a simplified wrapper for those two options.
+
+The need for this package arised from the task to load large NetCDF files with global daily climate data to calculate monthly or yearly averages. With this package this task can be achieved in a much faster way and without having to read the entire file into memory.
+
+### NetCDF functions
+
+For this, the package mainly consists of two functions:
+
+* `subsetNC()` subsets one or multiple NetCDF files by space (x,y), time and/or variable
+* `summariseNC()` summarises one or multiple NetCDF files over time 
+
+In addition there is also a function called `cellstatsNC()`, which calculates the spatial mean of one or multiple NetCDF files.
+
+### Raster functions
+
+There is also a function called `summariseRaster`, which allows a similar implementation to the `summariseNC` function, but using any type of raster files rather than NetCDF files. And there is also an identical function `summariseRast`, which depends on the slightly faster `terra` package. See benchmark example further down below for a comparison of computation time between the three functions. 
+
+### CDO functions
+
+There are also several functions (`filterNC`, `mergeNC` and `aggregateNC`), which rely on the Climate Data Operators (CDO) software (https://code.mpimet.mpg.de/projects/cdo). 
+
+**Note:** In order to use those functions, you need to have the CDO software installed on your computer.
+
+CDO is much faster than the equivalent R-functions, thus the CDO-based functions are considerably faster than the `subsetNC()` and `summariseNC()` functions.
+
+## Installation
+
+To *use* the package, it can be installed directly from GitHub using the `remotes` package. 
+
+```{r, eval=FALSE}
+# If not yet installed, install the remotes package
+if(!"remotes" %in% installed.packages()[,"Package"]) install.packages("remote")
+
+# Download & Install the package from GitHub if not yet done so
+if(!"processNC" %in% installed.packages()[,"Package"]) remotes::install_github("RS-eco/processNC", build_vignettes=T)
+```
+
+**If you encounter a bug or if you have any problems, please file an [issue](https://github.com/RS-eco/processNC/issues) on Github.**
+
+## Usage
+
+### Load processNC & terra package
+
+```{r}
+library(processNC)
+library(terra)
+library(raster)
+library(dplyr)
+```
+
+### List NetCDF data files
+
+```{r}
+# List daily temperature files for Germany from 1979 till 2016
+tas_files <- list.files(paste0(system.file(package="processNC"), "/extdata"), 
+                        pattern="tas.*\\.nc", full.names=T)
+
+# Show files
+basename(tas_files)
+
+# List daily precipitation files for Germany from 1979 till 2016
+pr_files <- list.files(paste0(system.file(package="processNC"), "/extdata"), 
+                       pattern="pr.*\\.nc", full.names=T)
+```
+
+### Subset NetCDF file
+
+```{r}
+# Subset NetCDF files by time and rough extent of Bavaria
+subsetNC(tas_files, ext=c(8.5, 14, 47, 51), startdate=1990, enddate=1999)
+
+# Get SpatialPolygonsDataFrame of Bavaria
+data(bavaria)
+
+# Subset NetCDF file by SpatVector
+r <- subsetNC(tas_files, ext=terra::vect(bavaria))
+plot(r[[1]])
+plot(bavaria, add=T)
+
+# Subset NetCDF file just by time
+subsetNC(tas_files, startdate=1990, enddate=1999)
+```
+
+### Summarise NetCDF file
+
+```{r}
+# Summarise daily NetCDF file for 10 years by week
+summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("week"))
+
+# Summarise daily NetCDF file for 10 years by month
+summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("month"))
+
+# Summarise daily NetCDF file for 10 years by year
+summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("year"))
+
+# Summarise daily NetCDF file for 10 years first by week and then by year
+summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("week", "year"))
+
+# Summarise daily NetCDF file for 10 years first by month and then by year
+s <- summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("month", "year"))
+s
+
+plot(s[[1]])
+```
+
+```{r}
+# Summarise daily NetCDF files for all years
+yearly_tas <- summariseNC(tas_files, startdate=2000, enddate=2016, group_col="year")
+yearly_tas
+
+yearly_pr <- summariseNC(pr_files, startdate=2000, enddate=2016, group_col="year")
+yearly_pr
+
+plot(yearly_tas[[1]])
+
+# Calculate mean annual temperature for Germany
+yearmean_tas <- as.data.frame(terra::global(yearly_tas, fun="mean", na.rm=T))
+colnames(yearmean_tas) <- "mean"
+yearmean_tas <- tibble::rownames_to_column(yearmean_tas, var="year")
+yearmean_tas$year <- sub("X", "", yearmean_tas$year)
+yearmean_tas$mean <- yearmean_tas$mean - 273.15
+head(yearmean_tas)
+
+# Calculate mean total precipitation for Germany
+yearmean_pr <- as.data.frame(terra::global(yearly_pr, fun="mean", na.rm=T))
+colnames(yearmean_pr) <- "mean"
+yearmean_pr <- tibble::rownames_to_column(yearmean_pr, var="year")
+yearmean_pr$year <- sub("X", "", yearmean_pr$year)
+yearmean_pr$mean <- yearmean_pr$mean #- 273.15
+head(yearmean_pr)
+```
+
+### Summarise NetCDF file using CDO commands
+
+* Filter years
+
+```{r, message=F}
+temp <- tempfile(fileext=".nc")
+filterNC(file=tas_files[2], startdate=1985, enddate=1990, outfile=temp)
+terra::rast(temp)
+```
+
+* Merge files:
+
+```{r, message=F}
+temp <- tempfile(fileext=".nc")
+mergeNC(files=tas_files, outfile=temp)
+terra::rast(temp)
+```
+
+* Aggregate files:
+
+```{r, message=F}
+temp2 <- tempfile(fileext=".nc")
+aggregateNC(infile=temp, outfile=temp2, group_col="month", var="tas", startdate="2000", enddate="2009")
+temp2 <- terra::rast(temp2)
+temp2
+names(temp2) <- 2000:2009
+time(temp2) <- lubridate::year(time(temp2))
+plot(temp2)
+```
+
+### Summarise Raster file
+
+This can be achieved using:
+
+```{r}
+summariseRaster(tas_files[4], startdate=2001, enddate=2010, var="tas")
+```
+
+or:
+
+```{r}
+summariseRast(tas_files[4], startdate=2001, enddate=2010, var="tas")
+```
+
+**Note:** This should give the same output as the summariseNC() function!!!
+
+#### Comparing computation time
+
+```{r}
+library(rbenchmark)
+benchmark("summariseNC" = {summariseNC(tas_files[4], startdate=2001, enddate=2010, 
+                                       group_col=c("year", "month"))},
+          "summariseRast" = {summariseRast(tas_files[4], startdate=2001, enddate=2010, var="tas")},
+          "summariseRaster" = {summariseRaster(tas_files[4], startdate=2001, enddate=2010, var="tas")}, 
+          replications=1, columns = c("test", "elapsed", "replications", "relative", "user.self", "sys.self"))
+```
+
+#### Comparing results
+
+```{r}
+sumNC <- summariseNC(tas_files[4], startdate=2001, enddate=2010, group_col=c("year", "month"))
+sumNC <- summary(sumNC[[1]])
+sumRast <- summariseRast(tas_files[4], startdate=2001, enddate=2010, var="tas")
+sumRast <- summary(sumRast[[1]])
+sumRaster <- summariseRaster(tas_files[4], startdate=2001, enddate=2010, var="tas")
+sumRaster <- summary(terra::rast(sumRaster[[1]]))
+
+sum_df <- data.frame(sumNC=sumNC,sumRast=sumRast,sumRaster=sumRaster) %>%
+  select(sumNC.Freq, sumRast.Freq, sumRaster.Freq)
+colnames(sum_df) <- c("sumNC", "sumRast", "sumRaster")
+sum_df %>% knitr::kable()
+```
+
+### CellStats NetCDF file
+
+```{r}
+# Summarise daily NetCDF file for 16 years and show first 6 values
+head(cellstatsNC(tas_files, startdate=2000, enddate=2016))
+
+# Summarise daily NetCDF files without time limit
+mean_daily_temp <- cellstatsNC(tas_files, stat="mean")
+mean_daily_prec <- cellstatsNC(pr_files, stat="mean")
+
+# Summarise yearly mean temperature of Germany 
+mean_daily_temp$year <- lubridate::year(mean_daily_temp$date)
+mean_daily_temp$mean <- mean_daily_temp$mean - 273.15
+mean_annual_temp <- aggregate(mean ~ year, mean_daily_temp, mean)
+
+# Summarise yearly total precipitation of Germany 
+mean_daily_prec$year <- lubridate::year(mean_daily_prec$date)
+mean_daily_prec$mean <- mean_daily_prec$mean #- 273.15
+mean_annual_prec <- aggregate(mean ~ year, mean_daily_prec, sum)
+
+library(ggplot2); library(patchwork)
+p1 <- ggplot() + geom_line(data=mean_annual_temp, aes(x=year, y=mean)) +
+  theme_bw() + labs(x="Year", y="Annual mean temperature (°C)") + ggtitle("Germany")
+p2 <- ggplot() + geom_line(data=mean_annual_prec, aes(x=year, y=mean)) +
+  theme_bw() + labs(x="Year", y="Annual total precipitation")
+p1 / p2
+```

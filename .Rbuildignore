@@ -1,0 +1,8 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+README.Rmd
+data-raw
+figures
+^LICENSE\.md$
+R/cropNC.R
+R/maskNC.R
