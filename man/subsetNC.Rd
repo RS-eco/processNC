@@ -9,7 +9,7 @@ subsetNC(
   startdate = NA,
   enddate = NA,
   ext = "",
-  var = "",
+  varid = "",
   filename = "",
   format = "raster",
   overwrite = FALSE
@@ -24,7 +24,7 @@ subsetNC(
 
 \item{ext}{\code{integer}. Extent object.}
 
-\item{var}{\code{character}. Variable that should be extracted.}
+\item{varid}{\code{character}. Variable that should be extracted.}
 
 \item{filename}{\code{character}. Output filename.}
 

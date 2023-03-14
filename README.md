@@ -101,7 +101,8 @@ pr_files <- list.files(paste0(system.file(package="processNC"), "/extdata"),
 
 ``` r
 # Subset NetCDF files by time and rough extent of Bavaria
-subsetNC(tas_files, ext=c(8.5, 14, 47, 51), startdate=1990, enddate=1999)
+subsetNC(files=tas_files, ext=c(8.5, 14, 47, 51), 
+         startdate=1990, enddate=1999, var="tas")
 ```
 
     class       : SpatRaster 
@@ -120,7 +121,7 @@ subsetNC(tas_files, ext=c(8.5, 14, 47, 51), startdate=1990, enddate=1999)
 data(bavaria)
 
 # Subset NetCDF file by SpatVector
-r <- subsetNC(tas_files, ext=terra::vect(bavaria))
+r <- subsetNC(tas_files, ext=terra::vect(bavaria), var="tas")
 plot(r[[1]])
 plot(bavaria, add=T)
 ```
@@ -309,7 +310,7 @@ temp <- tempfile(fileext=".nc")
 filterNC(file=tas_files[2], startdate=1985, enddate=1990, outfile=temp)
 ```
 
-    Created file /tmp/Rtmp27GP5b/file319c6c3320e5.nc.
+    Created file /tmp/Rtmp5RMd9L/file57b7628873f1.nc.
 
 ``` r
 terra::rast(temp)
@@ -320,7 +321,7 @@ terra::rast(temp)
     resolution  : 0.5, 0.5  (x, y)
     extent      : 6, 15, 47.5, 55  (xmin, xmax, ymin, ymax)
     coord. ref. : lon/lat WGS 84 
-    source      : file319c6c3320e5.nc 
+    source      : file57b7628873f1.nc 
     varname     : tas 
     names       :  tas_1,  tas_2,  tas_3,  tas_4,  tas_5,  tas_6, ... 
     unit        : Kelvin, Kelvin, Kelvin, Kelvin, Kelvin, Kelvin, ... 
@@ -333,7 +334,7 @@ temp <- tempfile(fileext=".nc")
 mergeNC(files=tas_files, outfile=temp)
 ```
 
-    Created file /tmp/Rtmp27GP5b/file319c26756533.nc.
+    Created file /tmp/Rtmp5RMd9L/file57b77a95a7d9.nc.
 
 ``` r
 terra::rast(temp)
@@ -344,7 +345,7 @@ terra::rast(temp)
     resolution  : 0.5, 0.5  (x, y)
     extent      : 6, 15, 47.5, 55  (xmin, xmax, ymin, ymax)
     coord. ref. : lon/lat WGS 84 
-    source      : file319c26756533.nc 
+    source      : file57b77a95a7d9.nc 
     varname     : tas 
     names       :  tas_1,  tas_2,  tas_3,  tas_4,  tas_5,  tas_6, ... 
     unit        : Kelvin, Kelvin, Kelvin, Kelvin, Kelvin, Kelvin, ... 
@@ -357,7 +358,7 @@ temp2 <- tempfile(fileext=".nc")
 aggregateNC(infile=temp, outfile=temp2, group_col="month", var="tas", startdate="2000", enddate="2009")
 ```
 
-    Created file /tmp/Rtmp27GP5b/file319c1a835a83.nc.
+    Created file /tmp/Rtmp5RMd9L/file57b71b6dd8be.nc.
 
 ``` r
 temp2 <- terra::rast(temp2)
@@ -369,7 +370,7 @@ temp2
     resolution  : 0.5, 0.5  (x, y)
     extent      : 6, 15, 47.5, 55  (xmin, xmax, ymin, ymax)
     coord. ref. : lon/lat WGS 84 
-    source      : file319c1a835a83.nc:tas 
+    source      : file57b71b6dd8be.nc:tas 
     varname     : tas 
     names       :  tas_1,  tas_2,  tas_3,  tas_4,  tas_5,  tas_6, ... 
     unit        : Kelvin, Kelvin, Kelvin, Kelvin, Kelvin, Kelvin, ... 
@@ -434,9 +435,9 @@ benchmark("summariseNC" = {summariseNC(tas_files[4], startdate=2001, enddate=201
 ```
 
                  test elapsed replications relative user.self sys.self
-    1     summariseNC  29.908            1    6.871     0.312    0.280
-    2   summariseRast  59.801            1   13.738    59.786    0.016
-    3 summariseRaster   4.353            1    1.000     4.241    0.108
+    1     summariseNC  28.137            1    6.599     0.308    0.248
+    2   summariseRast  55.832            1   13.094    55.820    0.014
+    3 summariseRaster   4.264            1    1.000     4.163    0.096
 
 #### Comparing results
 

@@ -80,13 +80,14 @@ pr_files <- list.files(paste0(system.file(package="processNC"), "/extdata"),
 
 ```{r}
 # Subset NetCDF files by time and rough extent of Bavaria
-subsetNC(tas_files, ext=c(8.5, 14, 47, 51), startdate=1990, enddate=1999)
+subsetNC(files=tas_files, ext=c(8.5, 14, 47, 51), 
+         startdate=1990, enddate=1999, var="tas")
 
 # Get SpatialPolygonsDataFrame of Bavaria
 data(bavaria)
 
 # Subset NetCDF file by SpatVector
-r <- subsetNC(tas_files, ext=terra::vect(bavaria))
+r <- subsetNC(tas_files, ext=terra::vect(bavaria), var="tas")
 plot(r[[1]])
 plot(bavaria, add=T)
 

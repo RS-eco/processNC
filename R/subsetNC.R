@@ -8,7 +8,7 @@
 #' @param ext \code{integer}. Extent object.
 #' @param startdate \code{integer}. Start year.
 #' @param enddate \code{integer}. End year.
-#' @param var \code{character}. Variable that should be extracted.
+#' @param varid \code{character}. Variable that should be extracted.
 #' @param filename \code{character}. Output filename.
 #' @param format \code{character}. Output file type. See \code{\link[raster]{writeRaster}} for different Options. The default format is "raster".
 #' @param overwrite \code{logical}. Should file be overwritten or not.
@@ -20,7 +20,7 @@
 #' @export subsetNC
 #' @name subsetNC
 subsetNC <- function(files, startdate=NA, enddate=NA, ext="",
-                     var="", filename="", format="raster", overwrite=FALSE){
+                     varid="", filename="", format="raster", overwrite=FALSE){
   
   if(overwrite==FALSE & filename != "" & file.exists(filename)){
     r <- terra::rast(filename)
@@ -71,8 +71,14 @@ subsetNC <- function(files, startdate=NA, enddate=NA, ext="",
       varsize <- nc$var[[nc$nvars]]$varsize
       ndims   <- nc$var[[nc$nvars]]$ndims
       
+      # Get variable
+      if(varid == ""){
+        varid <- names(nc$var)[2]
+      }
+      
       # Get start and end date of file
-      timeref <- as.Date(strsplit(nc$dim[[nc$ndims]]$units, " ")[[1]][3]) 
+      #timeref <- as.Date(strsplit(nc$dim[[nc$ndims]]$units, " ")[[1]][3]) 
+      timeref <- as.Date(strsplit(nc$dim$time$units, " ")[[1]][3]) 
       time <- timeref + ncdf4::ncvar_get(nc, nc$dim$time) - 1
       
       # Specify years to read full file if no value is provided
@@ -96,11 +102,12 @@ subsetNC <- function(files, startdate=NA, enddate=NA, ext="",
         time <- time[start[ndims]:end]
         
         # Read all values for subset of coordinates
-        z <- ncdf4::ncvar_get(nc, start=start, count=count)
+        z <- ncdf4::ncvar_get(nc, start=start, count=count, varid=varid)
         ncdf4::nc_close(nc)
         
         # Convert array into raster stack
-        z <- terra::rast(z, extent=c(xmin(ext), xmax(ext), ymin(ext),ymax(ext)), 
+        z <- terra::rast(z, extent=c(terra::xmin(ext), terra::xmax(ext), 
+                                     terra::ymin(ext),terra::ymax(ext)), 
                          crs="+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
         names(z) <- time
         terra::time(z) <- time
