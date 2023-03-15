@@ -81,13 +81,13 @@ pr_files <- list.files(paste0(system.file(package="processNC"), "/extdata"),
 ```{r}
 # Subset NetCDF files by time and rough extent of Bavaria
 subsetNC(files=tas_files, ext=c(8.5, 14, 47, 51), 
-         startdate=1990, enddate=1999, var="tas")
+         startdate=1990, enddate=1999, varid="tas")
 
 # Get SpatialPolygonsDataFrame of Bavaria
 data(bavaria)
 
 # Subset NetCDF file by SpatVector
-r <- subsetNC(tas_files, ext=terra::vect(bavaria), var="tas")
+r <- subsetNC(tas_files, ext=terra::vect(bavaria), varid="tas")
 plot(r[[1]])
 plot(bavaria, add=T)
 
@@ -99,19 +99,23 @@ subsetNC(tas_files, startdate=1990, enddate=1999)
 
 ```{r}
 # Summarise daily NetCDF file for 10 years by week
-summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("week"))
+summariseNC(files=tas_files[4], startdate=2001, enddate=2010, 
+            group_col=c("week"))
 
 # Summarise daily NetCDF file for 10 years by month
 summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("month"))
 
 # Summarise daily NetCDF file for 10 years by year
-summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("year"))
+summariseNC(files=tas_files[4], startdate=2001, enddate=2010, 
+            group_col=c("year"))
 
 # Summarise daily NetCDF file for 10 years first by week and then by year
-summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("week", "year"))
+summariseNC(files=tas_files[4], startdate=2001, enddate=2010, 
+            group_col=c("week", "year"))
 
 # Summarise daily NetCDF file for 10 years first by month and then by year
-s <- summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("month", "year"))
+s <- summariseNC(files=tas_files[4], startdate=2001, enddate=2010,
+                 group_col=c("month", "year"))
 s
 
 plot(s[[1]])

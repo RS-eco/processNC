@@ -102,7 +102,7 @@ pr_files <- list.files(paste0(system.file(package="processNC"), "/extdata"),
 ``` r
 # Subset NetCDF files by time and rough extent of Bavaria
 subsetNC(files=tas_files, ext=c(8.5, 14, 47, 51), 
-         startdate=1990, enddate=1999, var="tas")
+         startdate=1990, enddate=1999, varid="tas")
 ```
 
     class       : SpatRaster 
@@ -121,7 +121,7 @@ subsetNC(files=tas_files, ext=c(8.5, 14, 47, 51),
 data(bavaria)
 
 # Subset NetCDF file by SpatVector
-r <- subsetNC(tas_files, ext=terra::vect(bavaria), var="tas")
+r <- subsetNC(tas_files, ext=terra::vect(bavaria), varid="tas")
 plot(r[[1]])
 plot(bavaria, add=T)
 ```
@@ -148,7 +148,8 @@ subsetNC(tas_files, startdate=1990, enddate=1999)
 
 ``` r
 # Summarise daily NetCDF file for 10 years by week
-summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("week"))
+summariseNC(files=tas_files[4], startdate=2001, enddate=2010, 
+            group_col=c("week"))
 ```
 
     class       : SpatRaster 
@@ -178,7 +179,8 @@ summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("month
 
 ``` r
 # Summarise daily NetCDF file for 10 years by year
-summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("year"))
+summariseNC(files=tas_files[4], startdate=2001, enddate=2010, 
+            group_col=c("year"))
 ```
 
     class       : SpatRaster 
@@ -193,7 +195,8 @@ summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("year"
 
 ``` r
 # Summarise daily NetCDF file for 10 years first by week and then by year
-summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("week", "year"))
+summariseNC(files=tas_files[4], startdate=2001, enddate=2010, 
+            group_col=c("week", "year"))
 ```
 
     class       : SpatRaster 
@@ -208,7 +211,8 @@ summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("week"
 
 ``` r
 # Summarise daily NetCDF file for 10 years first by month and then by year
-s <- summariseNC(files=tas_files[4], startdate=2001, enddate=2010, group_col=c("month", "year"))
+s <- summariseNC(files=tas_files[4], startdate=2001, enddate=2010,
+                 group_col=c("month", "year"))
 s
 ```
 
@@ -310,7 +314,7 @@ temp <- tempfile(fileext=".nc")
 filterNC(file=tas_files[2], startdate=1985, enddate=1990, outfile=temp)
 ```
 
-    Created file /tmp/Rtmp5RMd9L/file57b7628873f1.nc.
+    Created file /tmp/RtmpNRiCrJ/file3c1938d617a8.nc.
 
 ``` r
 terra::rast(temp)
@@ -321,7 +325,7 @@ terra::rast(temp)
     resolution  : 0.5, 0.5  (x, y)
     extent      : 6, 15, 47.5, 55  (xmin, xmax, ymin, ymax)
     coord. ref. : lon/lat WGS 84 
-    source      : file57b7628873f1.nc 
+    source      : file3c1938d617a8.nc 
     varname     : tas 
     names       :  tas_1,  tas_2,  tas_3,  tas_4,  tas_5,  tas_6, ... 
     unit        : Kelvin, Kelvin, Kelvin, Kelvin, Kelvin, Kelvin, ... 
@@ -334,7 +338,7 @@ temp <- tempfile(fileext=".nc")
 mergeNC(files=tas_files, outfile=temp)
 ```
 
-    Created file /tmp/Rtmp5RMd9L/file57b77a95a7d9.nc.
+    Created file /tmp/RtmpNRiCrJ/file3c19719fa51c.nc.
 
 ``` r
 terra::rast(temp)
@@ -345,7 +349,7 @@ terra::rast(temp)
     resolution  : 0.5, 0.5  (x, y)
     extent      : 6, 15, 47.5, 55  (xmin, xmax, ymin, ymax)
     coord. ref. : lon/lat WGS 84 
-    source      : file57b77a95a7d9.nc 
+    source      : file3c19719fa51c.nc 
     varname     : tas 
     names       :  tas_1,  tas_2,  tas_3,  tas_4,  tas_5,  tas_6, ... 
     unit        : Kelvin, Kelvin, Kelvin, Kelvin, Kelvin, Kelvin, ... 
@@ -358,7 +362,7 @@ temp2 <- tempfile(fileext=".nc")
 aggregateNC(infile=temp, outfile=temp2, group_col="month", var="tas", startdate="2000", enddate="2009")
 ```
 
-    Created file /tmp/Rtmp5RMd9L/file57b71b6dd8be.nc.
+    Created file /tmp/RtmpNRiCrJ/file3c197c5eb3ff.nc.
 
 ``` r
 temp2 <- terra::rast(temp2)
@@ -370,7 +374,7 @@ temp2
     resolution  : 0.5, 0.5  (x, y)
     extent      : 6, 15, 47.5, 55  (xmin, xmax, ymin, ymax)
     coord. ref. : lon/lat WGS 84 
-    source      : file57b71b6dd8be.nc:tas 
+    source      : file3c197c5eb3ff.nc:tas 
     varname     : tas 
     names       :  tas_1,  tas_2,  tas_3,  tas_4,  tas_5,  tas_6, ... 
     unit        : Kelvin, Kelvin, Kelvin, Kelvin, Kelvin, Kelvin, ... 
@@ -435,9 +439,9 @@ benchmark("summariseNC" = {summariseNC(tas_files[4], startdate=2001, enddate=201
 ```
 
                  test elapsed replications relative user.self sys.self
-    1     summariseNC  28.137            1    6.599     0.308    0.248
-    2   summariseRast  55.832            1   13.094    55.820    0.014
-    3 summariseRaster   4.264            1    1.000     4.163    0.096
+    1     summariseNC  29.054            1    6.749     0.551    0.593
+    2   summariseRast  59.204            1   13.752    59.175    0.012
+    3 summariseRaster   4.305            1    1.000     4.207    0.092
 
 #### Comparing results
 
