@@ -46,7 +46,7 @@ writeNC <- function(data, res, ext, date, vars,
     var <- vars[x]
     
     ## Select all data for one varible
-    if(class(data) == list){
+    if(class(data) == "list"){
       data_sub <- data[[x]]
     } else{
       data_sub <- data
