@@ -35,7 +35,7 @@ Save data to a NetCDF file
 files <- list.files(paste0(system.file(package="processNC"), "/extdata"), 
                    pattern="tas.*\\\\.nc", full.names=TRUE)
 data <- subsetNC(files, ext=c(8.5, 14, 47, 51), startdate=1990, enddate=1999)
-data <- as.data.frame(data, xy=T)
+data <- as.data.frame(data, xy=TRUE)
 outfile <- tempfile(fileext=".nc4")
 writeNC(data=data, res=0.5, ext=c(8.5, 14, 47, 51), 
         date=seq(as.Date("1990-01-01"), as.Date("1999-01-01"), by="day"), 
