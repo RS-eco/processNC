@@ -56,7 +56,7 @@ To *use* the package, it can be installed directly from GitHub using the
 
 ``` r
 # If not yet installed, install the remotes package
-if(!"remotes" %in% installed.packages()[,"Package"]) install.packages("remote")
+if(!"remotes" %in% installed.packages()[,"Package"]) install.packages("remotes")
 
 # Download & Install the package from GitHub if not yet done so
 if(!"processNC" %in% installed.packages()[,"Package"]) remotes::install_github("RS-eco/processNC", build_vignettes=T)
