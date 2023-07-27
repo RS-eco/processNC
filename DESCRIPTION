@@ -2,7 +2,7 @@ Package: processNC
 Type: Package
 Title: R Package for processing large NetCDF files
 Version: 0.0.1
-Date: 2023-04-24
+Date: 2023-07-27
 Authors@R: 
     person("RS-eco", email = "RS-eco@posteo.de", role = c("cre", "aut"))
 Maintainer: RS-eco <RS-eco@posteo.de>
@@ -10,13 +10,12 @@ Description: Analysis of large NetCDF files (Subsetting, Summarising)
     for further use with R using the raster package.
 Depends: R (>= 3.6)
 Imports: 
-    dplyr, lubridate, ncdf4, raster, terra,
+    dplyr, lubridate, ncdf4, raster, terra, sf,
     sp, tidyr, tidyselect, magrittr, methods,
     abind, rlang, parallel, utils, zoo
 Suggests:
     knitr,
-    rmarkdown,
-    sf
+    rmarkdown
 Encoding: UTF-8
 License: GPL (>= 3)
 LazyData: TRUE
